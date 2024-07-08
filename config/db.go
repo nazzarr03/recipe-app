@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 
+	"github.com/nazzarr03/recipe-app/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -22,7 +23,7 @@ func ConnectDB() {
 		panic("failed to connect database")
 	}
 
-	if err := Db.AutoMigrate(); err != nil {
+	if err := Db.AutoMigrate(&models.User{}, &models.Recipe{}); err != nil {
 		panic("failed to migrate database")
 	}
 

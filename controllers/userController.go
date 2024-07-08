@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -71,8 +70,7 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	secret := os.Getenv("JWT_SECRET")
-	accessToken, err := middleware.CreateAccessToken(&user, secret, 24)
+	token, err := middleware.GenerateToken(user.ID)
 
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
@@ -82,6 +80,6 @@ func Login(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusOK).JSON(fiber.Map{
 		"message":      "Login successful",
-		"access_token": accessToken,
+		"access_token": token,
 	})
 }

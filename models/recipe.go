@@ -9,5 +9,4 @@ type Recipe struct {
 
 	CreatedAt time.Time `gorm:"default:current_timestamp"`
 	UpdatedAt time.Time `gorm:"default:null"`
-	DeletedAt time.Time `gorm:"default:null"`
 }

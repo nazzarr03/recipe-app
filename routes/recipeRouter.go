@@ -6,7 +6,6 @@ import (
 )
 
 func RecipeRoutes(router *fiber.App) {
-
 	router.Get("/recipes", controllers.GetRecipes)
 	router.Post("/recipes", controllers.CreateRecipe)
 	router.Put("/recipes/:id", controllers.UpdateRecipe)

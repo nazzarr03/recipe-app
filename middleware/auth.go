@@ -1,44 +1,29 @@
 package middleware
 
 import (
-	"strings"
-
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
-func Authentication(secret string) fiber.Handler {
-	return func(c *fiber.Ctx) {
+func Authentication() fiber.Handler {
+	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
-		t := strings.Split(authHeader, " ")
-		if len(t) != 2 {
-			c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Not authorized",
+		if authHeader == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Missing JWT",
 			})
-			c.Next()
-			return
-		}
-		authToken := t[1]
-		authorized, _ := IsAuthorized(authToken, secret)
-
-		if !authorized {
-			c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Not authorized",
-			})
-			c.Next()
-			return
 		}
 
-		ID, err := ExtractIDFromToken(authToken, secret)
+		token := authHeader[len("Bearer "):]
 
+		claims, err := ValidateToken(token)
 		if err != nil {
-			c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Cannot extract user id from token",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Invalid or expired JWT",
 			})
-			c.Next()
-			return
 		}
 
-		c.Set("id", ID)
-		c.Next()
+		c.Locals("userID", claims.UserId)
+
+		return c.Next()
 	}
 }

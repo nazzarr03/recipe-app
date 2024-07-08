@@ -42,7 +42,7 @@ func CreateRecipe(c *fiber.Ctx) error {
 func UpdateRecipe(c *fiber.Ctx) error {
 	var incomingRecipe models.Recipe
 	var recipe models.Recipe
-	if err := c.BodyParser(&recipe); err != nil {
+	if err := c.BodyParser(&incomingRecipe); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
 		})
@@ -80,9 +80,7 @@ func DeleteRecipe(c *fiber.Ctx) error {
 		})
 	}
 
-	recipe.DeletedAt = time.Now()
-
-	if err := config.Db.Save(&recipe).Error; err != nil {
+	if err := config.Db.Delete(&recipe).Error; err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
