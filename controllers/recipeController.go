@@ -90,6 +90,12 @@ func DeleteRecipe(c *fiber.Ctx) error {
 		})
 	}
 
+	if err := config.Rdb.Del(context.Background(), strconv.Itoa(int(recipe.ID))).Err(); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
 	return c.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "Recipe deleted successfully",
 	})
