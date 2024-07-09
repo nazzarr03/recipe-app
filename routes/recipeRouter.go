@@ -10,4 +10,6 @@ func RecipeRoutes(router *fiber.App) {
 	router.Post("/recipes", controllers.CreateRecipe)
 	router.Put("/recipes/:id", controllers.UpdateRecipe)
 	router.Delete("/recipes/:id", controllers.DeleteRecipe)
+	router.Get("/recipes/:id", controllers.GetRecipeByID)
+	router.Get("/popular-recipes", controllers.GetPopularRecipes)
 }
