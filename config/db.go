@@ -1,11 +1,9 @@
 package config
 
 import (
-	"context"
 	"fmt"
 	"os"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/joho/godotenv"
 	"github.com/nazzarr03/recipe-app/models"
 	"gorm.io/driver/postgres"
@@ -13,8 +11,7 @@ import (
 )
 
 var (
-	Db  *gorm.DB
-	Rdb *redis.Client
+	Db *gorm.DB
 )
 
 func init() {
@@ -23,6 +20,7 @@ func init() {
 	}
 	ConnectDB()
 	ConnectRedis()
+	ConnectRabbitMQ()
 }
 
 func ConnectDB() {
@@ -47,19 +45,4 @@ func ConnectDB() {
 
 	fmt.Println("Database connected successfully!")
 
-}
-
-func ConnectRedis() {
-	Rdb = redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_ADDR"),
-		Password: os.Getenv("REDIS_PASSWORD"),
-		DB:       0,
-	})
-
-	pong, err := Rdb.Ping(context.Background()).Result()
-	if err != nil {
-		panic("failed to connect to Redis")
-	}
-
-	fmt.Println("Redis connected successfully:", pong)
 }

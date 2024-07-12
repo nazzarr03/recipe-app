@@ -4,9 +4,9 @@ services:
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: recipe
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
@@ -37,6 +37,25 @@ services:
       - postgres
     depends_on:
       - postgres
+
+  mail_service:
+    build:
+      context: ./mailService
+      dockerfile: Dockerfile
+    environment:
+      - RABBITMQ_URL: ${RABBITMQ_URL}
+      - EMAIL_FROM: ${EMAIL_FROM}
+      - EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      - EMAIL_SMTP_SERVER: ${EMAIL_SMTP_SERVER}
+      - EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
 networks:
   postgres:

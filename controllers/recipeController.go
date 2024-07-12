@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nazzarr03/recipe-app/config"
 	"github.com/nazzarr03/recipe-app/models"
+	"github.com/streadway/amqp"
 )
 
 func GetRecipes(c *fiber.Ctx) error {
@@ -36,6 +38,54 @@ func CreateRecipe(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
+	}
+
+	var users []models.User
+	config.Db.Find(&users)
+
+	ch, err := config.RabbitMQConn.Channel()
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"email_queue",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	for _, user := range users {
+		email := user.Email
+		subject := "New Recipe Created!"
+		body := fmt.Sprintf("Hello %s,\n\nA new recipe '%s' has been created. Check it out!\n\nBest regards,\nRecipe App Team", user.Email, recipe.Title)
+
+		message := fmt.Sprintf("%s\n%s\n\n%s", email, subject, body)
+		err = ch.Publish(
+			"",
+			q.Name,
+			false,
+			false,
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(message),
+			},
+		)
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"message": fmt.Sprintf("Failed to queue email for %s: %v", email, err),
+			})
+		}
 	}
 
 	return c.Status(http.StatusCreated).JSON(fiber.Map{
