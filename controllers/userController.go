@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/nazzarr03/recipe-app/config"
 	"github.com/nazzarr03/recipe-app/middleware"
 	"github.com/nazzarr03/recipe-app/models"
+	"github.com/streadway/amqp"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -32,6 +34,50 @@ func SignUp(c *fiber.Ctx) error {
 	if err := config.Db.Create(&user).Error; err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
+		})
+	}
+
+	ch, err := config.RabbitMQConn.Channel()
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"email_queue",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	email := user.Email
+	subject := "Welcome to Recipe App"
+	body := "Thank you for signing up to Recipe App. We hope you enjoy our service."
+
+	message := fmt.Sprintf("%s\n%s\n\n%s", email, subject, body)
+
+	err = ch.Publish(
+		"",
+		q.Name,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(message),
+		},
+	)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": fmt.Sprintf("Failed to queue email for %s: %v", email, err),
 		})
 	}
 
