@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/nazzarr03/recipe-app/controllers"
-	"github.com/nazzarr03/recipe-app/middleware"
-	"github.com/nazzarr03/recipe-app/routes"
+	"github.com/nazzarr03/recipeApp/controllers"
+	"github.com/nazzarr03/recipeApp/middleware"
+	"github.com/nazzarr03/recipeApp/routes"
 )
 
 func main() {

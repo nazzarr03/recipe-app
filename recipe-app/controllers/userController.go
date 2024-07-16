@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/nazzarr03/recipe-app/config"
-	"github.com/nazzarr03/recipe-app/middleware"
-	"github.com/nazzarr03/recipe-app/models"
+	"github.com/nazzarr03/recipeApp/config"
+	"github.com/nazzarr03/recipeApp/middleware"
+	"github.com/nazzarr03/recipeApp/models"
 	"github.com/streadway/amqp"
 	"golang.org/x/crypto/bcrypt"
 )

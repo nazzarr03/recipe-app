@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/nazzarr03/recipe-app/models"
+	"github.com/nazzarr03/recipeApp/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/nazzarr03/recipe-app/controllers"
+	"github.com/nazzarr03/recipeApp/controllers"
 )
 
 func RecipeRoutes(router *fiber.App) {
