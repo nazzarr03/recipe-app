@@ -1,4 +1,4 @@
-FROM golang:1.21 AS build
+FROM golang:1.22 AS build
 
 WORKDIR /app
 
@@ -8,4 +8,4 @@ RUN go mod download
 
 RUN go build -o main .
 
-CMD ["./main"]
+CMD [ "./main" ]

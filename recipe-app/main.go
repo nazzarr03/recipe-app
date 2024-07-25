@@ -10,6 +10,8 @@ import (
 func main() {
 	app := fiber.New()
 
+	app.Use(middleware.LogMiddleware())
+
 	app.Post("/signup", controllers.SignUp)
 	app.Post("/login", controllers.Login)
 
@@ -17,5 +19,5 @@ func main() {
 
 	routes.RecipeRoutes(app)
 
-	app.Listen(":3000")
+	app.Listen(":3002")
 }

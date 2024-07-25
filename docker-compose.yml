@@ -1,7 +1,8 @@
-version: '3'
+version: '3.8'
 
 services:
   postgres:
+    container_name: postgres
     image: postgres:latest
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -16,23 +17,10 @@ services:
       - postgres
   
   redis:
+    container_name: redis
     image: redis:latest
     ports:
       - "6379:6379"
-    networks:
-      - postgres
-    depends_on:
-      - postgres
-
-  pgadmin:
-    image: dpage/pgadmin4:7.4
-    ports:
-      - 8080:80
-    environment:
-      PGADMIN_DEFAULT_EMAIL: nazararik585@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
     networks:
       - postgres
     depends_on:
@@ -43,19 +31,71 @@ services:
       context: ./mailService
       dockerfile: Dockerfile
     environment:
-      - RABBITMQ_URL: ${RABBITMQ_URL}
-      - EMAIL_FROM: ${EMAIL_FROM}
-      - EMAIL_PASSWORD: ${EMAIL_PASSWORD}
-      - EMAIL_SMTP_SERVER: ${EMAIL_SMTP_SERVER}
-      - EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      EMAIL_FROM: ${EMAIL_FROM}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_SMTP_SERVER: ${EMAIL_SMTP_SERVER}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
     depends_on:
       - rabbitmq
+    networks:
+      - postgres
 
   rabbitmq:
+    container_name: rabbitmq
     image: rabbitmq:management
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks:
+      - postgres
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "xpack.security.enabled=false"
+      - xpack.security.http.ssl.enabled=false
+    ports:
+      - "9200:9200"
+    networks:
+      - postgres
+
+  logger:
+    container_name: logger
+    build:
+      context: ./logger
+    ports:
+      - "3001:3001"
+    depends_on:
+      - elasticsearch
+    networks:
+      - postgres
+  
+  recipe:
+    container_name: recipe
+    build:
+      context: ./recipe-app
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - postgres
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - elasticsearch
+    networks:
+      - postgres
 
 networks:
   postgres:
